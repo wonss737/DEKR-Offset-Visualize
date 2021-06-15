@@ -2,7 +2,7 @@
 
 Visualize DEKR Offset map
 
-You can insert this code in DEKR
+You can insert this code in DEKR to visualize prediction of model
 
 Results is 10 x 7 grid images<br />
 
