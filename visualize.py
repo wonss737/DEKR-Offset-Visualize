@@ -2,7 +2,7 @@ import cv2
 from PIL import Image
 import numpy as np
 
-def draw_flow(img, flow, color=(255, 255, 255), step=32):
+def draw_flow(img, flow, color=(255, 255, 255), step=8):
     h, w = img.shape[:2]
     y, x = np.mgrid[step/2:h:step, step/2:w:step].reshape(2, -1).astype(int)
     fx, fy = flow[y, x].T
@@ -14,14 +14,15 @@ def draw_flow(img, flow, color=(255, 255, 255), step=32):
     return img
 
 def draw_heatmap(img, heatmap_keypoint):
-    heatmap_keypoint = cv2.cvtColor(heatmap_keypoint, cv2.COLOR_GRAY2BGR) * 255
+    heatmap_keypoint = np.array(heatmap_keypoint, dtype=np.uint8)
+    heatmap_keypoint = cv2.applyColorMap(heatmap_keypoint, cv2.COLORMAP_JET)
     return heatmap_keypoint * 0.7 + img * 0.3
 
-def save_image(image, heatmaps, masks, offset, offset_w, num, final_output_dir):
+def save_image(image, heatmaps, masks, offset, offset_w, image_name, final_output_dir):
 
     image = image.clone().cpu().numpy()
-    heatmaps = heatmaps.clone().cpu().numpy()
-    masks = masks.clone().cpu().numpy()
+    heatmaps = heatmaps.clone().mul(255).clamp(0, 255).cpu().numpy()
+    masks = masks.clone().mul(255).clamp(0, 255).cpu().numpy()
     offset = offset.clone().cpu().numpy()
     offset_w = offset_w.clone().cpu().numpy()
 
@@ -48,6 +49,8 @@ def save_image(image, heatmaps, masks, offset, offset_w, num, final_output_dir):
             showImage = draw_heatmap(image_, mask)
             b+=1
         elif i >= 36 and i < 53:
+            center_th = np.mean(heatmaps[0, 17, :, :] )
+            offset[:, c:c+2, :, :][:, :, heatmaps[0, 17, :, :] < center_th] = 0
             offset_keypoint = np.squeeze(offset[:, c:c+2, :, :], axis=0)
             showImage = draw_flow(image_, np.transpose(offset_keypoint, axes=(1,2,0)), color=(0, 0, 255))
             c+=2
@@ -57,4 +60,4 @@ def save_image(image, heatmaps, masks, offset, offset_w, num, final_output_dir):
             d+=2
         grid[height_begin:height_begin+height, width_begin:width_begin+width] = showImage
 
-    cv2.imwrite(final_output_dir + '/results/image_%07d.png' % num, grid)
+    cv2.imwrite(final_output_dir + '/results/' + image_name, grid)
