@@ -18,13 +18,11 @@ def draw_heatmap(img, heatmap_keypoint):
     heatmap_keypoint = cv2.applyColorMap(heatmap_keypoint, cv2.COLORMAP_JET)
     return heatmap_keypoint * 0.7 + img * 0.3
 
-def save_image(image, heatmaps, masks, offset, offset_w, image_name, final_output_dir):
+def save_image(image, heatmaps, offset, image_name, final_output_dir):
 
     image = image.clone().cpu().numpy()
     heatmaps = heatmaps.clone().mul(255).clamp(0, 255).cpu().numpy()
-    masks = masks.clone().mul(255).clamp(0, 255).cpu().numpy()
     offset = offset.clone().cpu().numpy()
-    offset_w = offset_w.clone().cpu().numpy()
 
     height = heatmaps.shape[2]
     width = heatmaps.shape[3]
@@ -33,31 +31,23 @@ def save_image(image, heatmaps, masks, offset, offset_w, image_name, final_outpu
     image = ((image - np.min(image)) / np.ptp(image)) * 255
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
 
-    grid = np.zeros((height * 10, width * 7, 3))
-    a=b=c=d=0
-    for i in range(70):
-        height_begin = height * (i // 7)
-        width_begin = width * (i % 7)
+    grid = np.zeros((height * 7, width * 5, 3))
+    a=c=0
+    for i in range(35):
+        height_begin = height * (i // 5)
+        width_begin = width * (i % 5)
         image_ = image.copy()
         showImage = np.zeros((height, width, 3))
         if i < 18:
             heatmap = np.squeeze(heatmaps[:, a, :, :], axis=0)
             showImage = draw_heatmap(image_, heatmap)
             a+=1
-        elif i >= 18 and i < 36:
-            mask = np.squeeze(masks[:, b, :, :], axis=0)
-            showImage = draw_heatmap(image_, mask)
-            b+=1
-        elif i >= 36 and i < 53:
+        else :
             center_th = np.mean(heatmaps[0, 17, :, :] )
             offset[:, c:c+2, :, :][:, :, heatmaps[0, 17, :, :] < center_th] = 0
             offset_keypoint = np.squeeze(offset[:, c:c+2, :, :], axis=0)
             showImage = draw_flow(image_, np.transpose(offset_keypoint, axes=(1,2,0)), color=(0, 0, 255))
             c+=2
-        else:
-            offset_w_keypoint = np.sum(np.squeeze(offset_w[:, d:d+2, :, :], axis=0), axis=0) * 200
-            showImage = draw_heatmap(image_, offset_w_keypoint)
-            d+=2
         grid[height_begin:height_begin+height, width_begin:width_begin+width] = showImage
 
     cv2.imwrite(final_output_dir + '/results/' + image_name, grid)
