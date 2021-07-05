@@ -11,4 +11,4 @@ Results is 10 x 7 grid images<br />
 37-53 images are GT Offset maps<br />
 54-70 images are GT Offset weight maps<br />
 
-![image](https://user-images.githubusercontent.com/53816460/122029676-09898600-ce08-11eb-8780-8c0c828cab8f.jpg)
+![000000000872](https://user-images.githubusercontent.com/53816460/124405870-b9547280-dd7a-11eb-8050-568cec1193f9.jpg)
