@@ -4,7 +4,7 @@ Visualize DEKR Offset map
 
 You can insert this code in DEKR to visualize prediction of model
 
-Results is 10 x 7 grid images<br />
+Results is 7 x 5 grid images<br />
 
 1-18 images are GT Heatmaps<br />
 19-35 images are GT Offset maps<br />
